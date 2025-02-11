@@ -1,10 +1,17 @@
 import numpy as np
+import time as time
 
 
 class RingDistances:
-    """This class calculates the distances between spins on a ring and the connection vectors"""
+    """This class calculates the distances between spins on a ring and the connection vectors
+    """
 
     def __init__(self, num_spins, x, y):
+        """Initializes the class with the number of spins and the x and y coordinates of the first spin, note that the
+        rings center will always be at (0,0,0) in the cartesian coordinate system.
+        Args:
+            num_spins (int): Number of spins on the ring
+            self.x, self.y (float): Cartesian coordinates of the first spin"""
         self.num_spins = num_spins
         self.x = x
         self.y = y
@@ -13,13 +20,16 @@ class RingDistances:
         """This function takes the x and y coordinates of the first spin
          on the ring and returns the polar coordinates of the spin.
 
-         Args:
-         x, y (float): Cartesian coordinates of the first spin
          returns:
-         start_position (list): List with the polar coordinates of the spin
-         :rtype: object"""
+             start_position (list): List with the polar coordinates of the spin"""
         r = np.sqrt(self.x ** 2 + self.y ** 2)
-        phi = np.arccos(self.x / r)
+        # calculate the angle phi and getting rid of numerical errors
+        if self.x / r == 0:
+            phi = np.pi / 2
+        elif self.x / r == - 1:
+            phi = np.pi
+        else:
+            phi = np.arccos(self.x / r)
         start_position = [r, phi]
         return start_position
 
@@ -49,18 +59,26 @@ class RingDistances:
             all_positions (dict): Dictionary with the cartesian coordinates of each spin"""
         all_positions_polar = self.position_polar()
         all_positions = {}
+        # getting rid of numerical errors and calculating the cartesian coordinates
         for i in range(self.num_spins):
-            x_c = all_positions_polar[i][0] * np.cos(all_positions_polar[i][1])
-            y_c = all_positions_polar[i][0] * np.sin(all_positions_polar[i][1])
+            if all_positions_polar[i][1] == 0:
+                x_c = all_positions_polar[i][0]
+                y_c = 0
+            elif all_positions_polar[i][1] == np.pi / 2:
+                x_c = 0
+                y_c = all_positions_polar[i][0]
+            elif all_positions_polar[i][1] == np.pi:
+                x_c = 0
+                y_c = -all_positions_polar[i][0]
+            else:
+                x_c = all_positions_polar[i][0] * np.cos(all_positions_polar[i][1])
+                y_c = all_positions_polar[i][0] * np.sin(all_positions_polar[i][1])
             z_c = 0
             all_positions[i] = np.array([x_c, y_c, z_c], dtype=complex)
         return all_positions
 
     def connection_vectors(self):
         """This function creates all the connection vectors for each possible spin pair
-        Args:
-            x, y (float): Cartesian coordinates of the first spin
-            num_spins (int): Number of spins on the ring
         Returns:
             all_connection_vectors (dict): Dictionary with the connection vectors"""
         all_positions = self.all_positions_cartesian()
@@ -73,13 +91,9 @@ class RingDistances:
 
     def r_ij(self):
         """This function calculates all distances between each spin using the connection vectors
-        Args:
-            num_spins (int): Number of spins on the ring
-            x ,y (float): Cartesian coordinates of the first spin
         Returns:
             all_r_ij (dict): Dictionary with the distances between each spin"""
         all_connection_vectors = self.connection_vectors()
-        # initialize dictionary
         all_r_ij = {}
         for name, vector in all_connection_vectors.items():
             r = np.linalg.norm(vector)
@@ -88,14 +102,12 @@ class RingDistances:
 
     def unit_connection_vectors(self):
         """This function returns all normalised connection vectors
-        Args:
-            num_spins (int): Number of spins on the ring
-            x, y (float): Cartesian coordinates of the first spin
         Returns:
             all_unit_connection_vectors (dict): Dictionary with the normalised connection vectors"""
         all_r_ij = self.r_ij()
         all_unit_connection_vectors = {}
-        for name, vector in self.connection_vectors():  # enumerate returns a tuple that contains the index i (from 0
+        connection_vectors = self.connection_vectors()
+        for name, vector in connection_vectors.items():  # enumerate returns a tuple that contains the index i (from 0
             # to n ) and the actual element of the list, so this loop runs through the index i and combines the element
             # from the list with the vectors from the function with all_connection_vectors
             e_ij = vector / all_r_ij[name]
@@ -104,9 +116,6 @@ class RingDistances:
 
     def orientation_matrices(self):
         """This function creates all orientation matrices using the outer product
-        Args:
-            num_spins (int): Number of spins on the ring
-            x, y (float): Cartesian coordinates of the first spin
         Returns:
             all_matrices (dict): Dictionary with the orientation matrices"""
         all_unit_connection_vectors = self.unit_connection_vectors()
@@ -118,9 +127,6 @@ class RingDistances:
 
     def b_ij(self):
         """This function calculates all b_ij pre-factors which are derived from r_ij
-        Args:
-            num_spins (int): Number of spins on the ring
-            x, y (float): Cartesian coordinates of the first spin
         Returns:
             all_b_ij (dict): Dictionary with the b_ij pre-factors"""
         all_r_ij = self.r_ij()
@@ -132,6 +138,11 @@ class RingDistances:
 
 
 if __name__ == "__main__":
-    print("-------TESTING WITH X=1, Y=1----------")
-    ring = RingDistances(3, 0, 1)
-    print(ring.r_ij())
+    print("-------TESTING WITH X=0, Y=1----------")
+    ring = RingDistances(2, 0, 1)
+    start = time.time()
+    matrix = ring.orientation_matrices()
+    ring.b_ij()
+    end = time.time()
+    print("Runtime: ", end - start)
+    print(matrix)
