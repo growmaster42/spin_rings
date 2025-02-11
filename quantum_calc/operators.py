@@ -1,54 +1,32 @@
 import numpy as np
-import hilbert_space as hs
-class Operators:
-    def __init__(self, spin, k, i):
+from hilbert_space import BasisVectors
+
+
+class SOperators:
+    """This class contains the spin operators s_z, s_plus, s_minus and their respective actions on the basis vectors.
+    """
+
+    def __init__(self, num_spins, spin, ket_number, state):
+        self.state = state
+        self.num_spins = num_spins
         self.spin = spin
-        self.k = k
-        self.i = i
+        self.ket_number = ket_number
+        self.basis = BasisVectors(self.num_spins, self.spin)
+        self.ket = self.basis.computation_basis()[self.ket_number]
 
-    def s_z(self, ket, spin, k, i):
-        """This function acts as the s_z operator on a given ket and simply returns.
-        the m_i which is quantum number of the i-th spin.
-        Note: m_i = a_i - spin, since a computational basis is used.
-        Example: s_z|0.5> = 0.5|0.5>,
-        solution of the eigenvalue equation for s_z|s, m> = m|s, m>
+    def s_z(self):
+        """This function calculates the action of the s_z operator on a given ket."""
+        return self.ket[self.state] - self.spin
 
-        Args:
-        vec (list): List of basis vectors
-        spin (float): Spin of the system
-        k (int): Index of the basis vector
-        i (int): Index of the spin"""
-        basis_vectors = vec.copy()
-        vector = basis_vectors[k]
-        m_i = vector[i] - spin
-        return m_i
+    def s_plus(self):
+        """This function calculates the action of the s_plus operator on a given ket."""
+        m_i = self.s_z()
+        return np.sqrt(self.spin * (self.spin + 1) - m_i * (m_i + 1))
 
-
-# this function returns a list with all pre-factors that s_plus produces for each ket
-def s_plus(vec, spin, k, i):
-    """This function acts as the s_plus operator on a given ket and returns
-    the square root of some weird formula as seen in the code.
-
-    Args:
-        vec (list): List of basis vectors
-        spin (float): Spin of the system
-        k (int): Index of the basis vector
-        i (int): Index of the spin"""
-    basis_vectors = vec.copy()
-    vector = basis_vectors[k]
-    m = vector[i] - spin
-    sqrt = np.sqrt(spin * (spin + 1) - m * (m + 1)) * h
-
-    return sqrt
-
-
-def s_minus(vec, spin, k, i):
-    basis_vectors = vec.copy()
-    vector = basis_vectors[k]
-    m = vector[i] - spin
-    sqrt = np.sqrt(spin * (spin + 1) - m * (m - 1)) * h
-    return sqrt
-
+    def s_minus(self):
+        """This function calculates the action of the s_plus operator on a given ket."""
+        m_i = self.s_z()
+        return np.sqrt(self.spin * (self.spin + 1) - m_i * (m_i - 1))
 
 # this function changes the basis vector given the way s_plus * s_plus interact with the ket, i should max. be
 # num_spins , since i refers to the first spin
@@ -86,5 +64,7 @@ def s_minus_s_minus_ket_change(vec, k, i, j):
     return basis_vector
 
 
-
-
+if __name__ == "__main__":
+    s_operator = SOperators(3, 0.5, 1, 1)
+    print(s_operator.s_plus())
+    print(s_operator.s_minus())
