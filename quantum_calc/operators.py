@@ -1,70 +1,78 @@
 import numpy as np
 from hilbert_space import BasisVectors
-
+import time as tm
 
 class SOperators:
     """This class contains the spin operators s_z, s_plus, s_minus and their respective actions on the basis vectors.
-    """
+    :param num_spins: The number of spins in the system"""
+    @staticmethod
+    def s_z(ket, i, spin):
+        """This function calculates the action of the s_z operator on a given ket.
+        :returns: The magnetic quantum number of the given ket"""
+        return ket[i] - spin
 
-    def __init__(self, num_spins, spin, ket_number, state):
-        self.state = state
-        self.num_spins = num_spins
-        self.spin = spin
-        self.ket_number = ket_number
-        self.basis = BasisVectors(self.num_spins, self.spin)
-        self.ket = self.basis.computation_basis()[self.ket_number]
+    @staticmethod
+    def s_plus(ket, i, spin):
+        """This function calculates the action of the s_plus operator on a given ket.
+        :returns: the pre-factor of the s_plus operator after acting on the ket"""
+        m_i = ket[i] - spin
+        return np.sqrt(spin * (spin + 1) - m_i * (m_i + 1))
 
-    def s_z(self):
-        """This function calculates the action of the s_z operator on a given ket."""
-        return self.ket[self.state] - self.spin
+    @staticmethod
+    def s_minus(ket, i, spin):
+        """This function calculates the action of the s_plus operator on a given ket.
+        :returns: the pre-factor of the s_minus operator after acting on the ket"""
+        m_i = ket[i] - spin
+        return np.sqrt(spin * (spin + 1) - m_i * (m_i - 1))
 
-    def s_plus(self):
-        """This function calculates the action of the s_plus operator on a given ket."""
-        m_i = self.s_z()
-        return np.sqrt(self.spin * (self.spin + 1) - m_i * (m_i + 1))
+    @staticmethod
+    def s_plus_s_plus_ket_change(ket, i, j):
+        """This function calculates the change of the ket after acting with the s_plus*s_plus operator on two spins.
+        :param i: The index of the first spin
+        :param j: The index of the second spin
+        :returns: The new ket after acting with the s_plus*s_plus operator"""
+        changed_ket = ket.copy()
+        changed_ket[i] += 1
+        changed_ket[j] += 1
+        return changed_ket
 
-    def s_minus(self):
-        """This function calculates the action of the s_plus operator on a given ket."""
-        m_i = self.s_z()
-        return np.sqrt(self.spin * (self.spin + 1) - m_i * (m_i - 1))
+    @staticmethod
+    def s_plus_s_minus_ket_change(ket, i, j):
+        """This function calculates the change of the ket after acting with the s_plus*s_minus operator on two spins.
+        :param i: The index of the first spin
+        :param j: The index of the second spin
+        :returns: The new ket after acting with the s_plus*s_minus operator"""
+        changed_ket = ket.copy()
+        changed_ket[i] += 1
+        changed_ket[j] -= 1
+        return changed_ket
 
-# this function changes the basis vector given the way s_plus * s_plus interact with the ket, i should max. be
-# num_spins , since i refers to the first spin
-def s_plus_s_plus_ket_change(vec, k, i, j):
-    basis_vector = vec[k].copy()
-    basis_vector[i] += 1
-    basis_vector[j] += 1
-    return basis_vector
+    @staticmethod
+    def s_minus_s_plus_ket_change(ket, i, j):
+        """This function calculates the change of the ket after acting with the s_minus*s_plus operator on two spins.
+        :param i: The index of the first spin
+        :param j: The index of the second spin
+        :returns: The new ket after acting with the s_minus*s_plus operator"""
+        changed_ket = ket.copy()
+        changed_ket[i] -= 1
+        changed_ket[j] += 1
+        return changed_ket
 
-
-# this function changes the basis vector given the way s_plus * s_plus interact with the ket, i should max. be
-# num_spins , since i refers to the first spin
-def s_plus_s_minus_ket_change(vec, k, i, j):
-    basis_vector = vec[k].copy()
-    basis_vector[i] += 1
-    basis_vector[j] -= 1
-    return basis_vector
-
-
-# this function changes the basis vector given the way s_plus * s_plus interact with the ket, i should max. be
-# num_spins , since i refers to the first spin
-def s_minus_s_plus_ket_change(vec, k, i, j):
-    basis_vector = vec[k].copy()
-    basis_vector[i] -= 1
-    basis_vector[j] += 1
-    return basis_vector
-
-
-# this function changes the basis vector given the way s_plus * s_plus interact with the ket, i should max. be
-# num_spins , since i refers to the first spin
-def s_minus_s_minus_ket_change(vec, k, i, j):
-    basis_vector = vec[k].copy()
-    basis_vector[i] -= 1
-    basis_vector[j] -= 1
-    return basis_vector
+    @staticmethod
+    def s_minus_s_minus_ket_change(ket, i, j):
+        """This function calculates the change of the ket after acting with the s_minus*s_minus operator on two spins.
+        :param i: The index of the first spin
+        :param j: The index of the second spin
+        :returns: The new ket after acting with the s_minus*s_minus operator"""
+        changed_ket = ket.copy()
+        changed_ket[i] -= 1
+        changed_ket[j] -= 1
+        return changed_ket
 
 
 if __name__ == "__main__":
-    s_operator = SOperators(3, 0.5, 1, 1)
-    print(s_operator.s_plus())
-    print(s_operator.s_minus())
+    start = tm.time()
+    sz = SOperators.s_z([1, 1, 1, 1], 1, 0.5)
+    end = tm.time()
+    print(f"Runtime s_z: ", end - start)
+    print(sz)
