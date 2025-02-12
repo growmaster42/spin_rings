@@ -16,7 +16,8 @@ class SOperators:
         """This function calculates the action of the s_plus operator on a given ket.
         :returns: the pre-factor of the s_plus operator after acting on the ket"""
         m_i = ket[i] - spin
-        return np.sqrt(spin * (spin + 1) - m_i * (m_i + 1))
+        m_i_squared = m_i ** 2
+        return np.sqrt(spin * (spin + 1) - m_i_squared - m_i)
 
     @staticmethod
     def s_minus(ket, i, spin):
@@ -72,7 +73,7 @@ class SOperators:
 
 if __name__ == "__main__":
     start = tm.time()
-    sz = SOperators.s_z([1, 1, 1, 1], 1, 0.5)
+    sz = SOperators.s_minus([1, 1, 1, 1], 1, 0.5)
     end = tm.time()
     print(f"Runtime s_z: ", end - start)
     print(sz)
