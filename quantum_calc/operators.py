@@ -9,14 +9,15 @@ class SOperators:
     def s_z(ket, i, spin):
         """This function calculates the action of the s_z operator on a given ket.
         :returns: The magnetic quantum number of the given ket"""
-        return ket[i] - spin
+        ket[i] -= spin
+        return ket[i]
 
     @staticmethod
     def s_plus(ket, i, spin):
         """This function calculates the action of the s_plus operator on a given ket.
         :returns: the pre-factor of the s_plus operator after acting on the ket"""
         m_i = ket[i] - spin
-        m_i_squared = m_i ** 2
+        m_i_squared = np.square(m_i)
         return np.sqrt(spin * (spin + 1) - m_i_squared - m_i)
 
     @staticmethod
@@ -24,7 +25,8 @@ class SOperators:
         """This function calculates the action of the s_plus operator on a given ket.
         :returns: the pre-factor of the s_minus operator after acting on the ket"""
         m_i = ket[i] - spin
-        return np.sqrt(spin * (spin + 1) - m_i * (m_i - 1))
+        m_i_squared = np.square(m_i)
+        return np.sqrt(spin * (spin + 1) - m_i_squared + m_i)
 
     @staticmethod
     def s_plus_s_plus_ket_change(ket, i, j):
