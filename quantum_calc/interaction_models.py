@@ -3,6 +3,7 @@ from hilbert_space.basis_vectors import BasisVectors as Bv
 import time as tm
 import numpy as np
 
+
 def heisenberg_chain(vec, spin, num_spins, j_ij):
     basis_vectors = vec.copy()
     double_spin = 2 * spin
@@ -40,6 +41,3 @@ if __name__ == "__main__":
     matrix = heisenberg_chain(basis, spin, num_spins, 1)
     end = tm.time()
     print(f"Runtime s={spin}-Heisenberg_chain with num_spins={num_spins}: ", end - start)
-
-
-
